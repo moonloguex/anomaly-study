@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"java.import.gradle.wrapper.enabled": true,
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}
