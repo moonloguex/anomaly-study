@@ -5,6 +5,6 @@ build
 coverage
 .env
 .env.*
-.venv
+.venv/
 .git
 .DS_Store
