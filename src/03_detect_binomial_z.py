@@ -14,16 +14,6 @@ MIN_ERR = 3        # 에러 1~2건은 흔한 노이즈일 수 있어 최소 에�
 CONSEC_N = 3       # 연속 N회 이상이면 알람(스파이크 1회성 오탐 완화)
 EPS = 1e-12        # 0으로 나누는 문제를 피하기 위한 아주 작은 수
 
-def rolling_p_hat(err: pd.Series, req: pd.Series) -> pd.Series:
-    # 과거 WINDOW 분 동안의 누적 에러율 추정치 계산
-    err_sum = df.groupby("service")["err_count"].transform(
-        lambda s: s.rolling(WINDOW, min_periods=WINDOW).sum()
-    )
-    req_sum = df.groupby("service")["req_count"].transform(
-        lambda s: s.rolling(WINDOW, min_periods=WINDOW).sum()
-    )
-    return (err_sum / req_sum.clip(lower=1)).clip(lower=1e-6, upper=1 - 1e-6)
-
 def main() -> None:
     df = pd.read_parquet(DATA)
     df["ts"] = pd.to_datetime(df["ts"])
@@ -33,6 +23,13 @@ def main() -> None:
     df["req_count"] = df["req_count"].clip(lower=0)
 
     # 정상 에러율 추정 p_hat = (과거 에러 총합) / (과거 요청 총합)
+    # 과거 WINDOW 분 동안의 누적 에러율 추정치 계산
+    err_sum = df.groupby("service")["err_count"].transform(
+        lambda s: s.rolling(WINDOW, min_periods=WINDOW).sum()
+    )
+    req_sum = df.groupby("service")["req_count"].transform(
+        lambda s: s.rolling(WINDOW, min_periods=WINDOW).sum()
+    )
     df["p_hat"] = (err_sum / req_sum.clip(lower=1)).clip(lower=1e-6, upper=1 - 1e-6)
 
     # 기대 에러 건수 = n * p
