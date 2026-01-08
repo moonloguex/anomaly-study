@@ -24,6 +24,8 @@ def main() -> None:
     out = sql_str_path(OUT.resolve())
 
     # JSONL 로드 - 계산 컬럼 추가 -> 분 단위 집계 -> Parquet로 저장
+    # COPY (...) TO 'output.parquet' (FORMAT PARQUET); 형태로 바로 저장
+    # read_json_auto() 함수로 JSONL 파일 로드
     con.execute(f"""
         COPY (
             SELECT CAST(ts AS TIMESTAMP) AS ts
@@ -39,6 +41,8 @@ def main() -> None:
     # 검증
     row = con.execute(f"SELECT COUNT(*) AS n FROM read_parquet('{out}')").fetchone()[0]
     print(f"Wrote: {OUT} rows={row}")
+
+    con.close()
 
 if __name__ == "__main__":
     main()
